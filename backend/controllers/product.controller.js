@@ -1,6 +1,7 @@
 import Product from "../models/product.model.js";
 import { redis } from "../lib/redis.js";
 import cloudinary from "../lib/cloudinary.js";
+import { raw } from "express";
 
 export const getAllProducts = async(req,res)=>{
     try {
@@ -104,3 +105,47 @@ export const getRecommendedProducts = async(req,res) =>{
     }
 }
 
+export const getProductsByCategory = async(req,res) =>{
+    const {category} = req.params;
+    try {
+        const products= await Product.find({category});
+        res.json({products});
+
+    } catch (error) {
+        console.log("Error in getProductByCategory controller",error.message);
+        res.status(500).json({message:"Server error",error:error.message});
+    }
+
+}
+
+export const toggleFeaturedProduct = async(req,res) =>{
+    try {
+        const product = await Product.findById(req.params.id);
+        if(!product){
+            product.isFeatured = !product.isFeatured;
+            const updatedProduct = await product.save();
+            await updateFeaturedProductCache();
+            res.json(updatedProduct);
+
+        }
+        else{
+            res.status(404).json({message:"Product not found"});
+        }
+
+    } catch (error) {
+        console.log("Error in toggleFeaturedProduct controller",error.message);
+        res.status(500).json({message:"Server error",error:error.message});
+
+        
+    }
+}
+
+async function updateFeaturedProductCached(){
+    try{
+        const featuredProducts = await Product.find({isFeatured:true}).lean();
+        await redis.set("featured_products",JSON.stringify(featuredProducts));
+    }
+    catch(error){
+        console.log("error ")
+    }
+}
