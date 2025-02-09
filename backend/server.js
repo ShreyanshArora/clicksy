@@ -28,6 +28,10 @@ app.use("/api/coupon",couponRoutes);
 
 app.use("/api/payments",paymentRoutes);
 
+app.use("/api/analytics",analyticsRoutes);
+
+app.use("/")
+
 
 app.listen(port,()=>{
     console.log("server is running on https://localhost:"+port);
