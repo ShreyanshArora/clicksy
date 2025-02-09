@@ -25,3 +25,48 @@ export const getAnalyticsData = async(req,res) =>{
         revenue:totalRevenue
     }
 }
+
+export const getDailySalesData = async(startDate,endDate) => {
+    const dailySalesData = await Order.aggregate([
+        {
+            $match: {
+                createdAt: {
+                    $gte: startDate,
+                    $lte: endDate
+                }
+            }
+        },
+        {
+            $group: {
+                _id: {
+                    $dateToString: {
+                        format: "%Y-%m-%d",
+                        date: "$createdAt"
+                    }
+                },
+                
+            }
+        },
+        {$sort:{_id:1}},
+    ])
+
+const dateArray = getDatesInRange(startDate,endDate);
+// console.log(dateArray);
+return dateArray.map(date=>{
+    const foundData=dailySalesData.find(item=>item._id===date);
+    return{
+    date,
+    sales:foundData?.sales || 0,
+    revenue:foundData?.revenue || 0
+})
+};
+
+function getDatesInRange(startDate,endDate){
+    const dates= [];
+    let currentDate = new Date(startDate);
+    while(currentDate <= endDate){
+        dates.push(new Date(currentDate.toISOString().split("T")[0]));
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    return dates;
+}
