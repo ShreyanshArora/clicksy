@@ -6,4 +6,4 @@ dotenv.config()
 export const redis = new Redis(process.env.UPSTASH_REDIS_URL);
 // await client.set('huh', 'barrr'); 
 
-await redis.set("what","barrr");
+await redis.set("whatttt","barrtttr");

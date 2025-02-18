@@ -1,59 +1,49 @@
-import { BarChart, PlusCircle, ShoppingBasket } from "lucide-react";
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-
-import AnalyticsTab from "../components/AnalyticsTab";
-import CreateProductForm from "../components/CreateProductForm";
-import ProductsList from "../components/ProductsList";
+import { useEffect } from "react";
 import { useProductStore } from "../stores/useProductStore";
+import { useParams } from "react-router-dom";
+import { motion } from "framer-motion";
+import ProductCard from "../components/ProductCard";
 
-const tabs = [
-	{ id: "create", label: "Create Product", icon: PlusCircle },
-	{ id: "products", label: "Products", icon: ShoppingBasket },
-	{ id: "analytics", label: "Analytics", icon: BarChart },
-];
+const CategoryPage = () => {
+	const { fetchProductsByCategory, products } = useProductStore();
 
-const AdminPage = () => {
-	const [activeTab, setActiveTab] = useState("create");
-	const { fetchAllProducts } = useProductStore();
+	const { category } = useParams();
 
 	useEffect(() => {
-		fetchAllProducts();
-	}, [fetchAllProducts]);
+		fetchProductsByCategory(category);
+	}, [fetchProductsByCategory, category]);
 
+	console.log("products:", products);
 	return (
-		<div className='min-h-screen relative overflow-hidden'>
-			<div className='relative z-10 container mx-auto px-4 py-16'>
+		<div className='min-h-screen'>
+			<div className='relative z-10 max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-16'>
 				<motion.h1
-					className='text-4xl font-bold mb-8 text-emerald-400 text-center'
+					className='text-center text-4xl sm:text-5xl font-bold text-emerald-400 mb-8'
 					initial={{ opacity: 0, y: -20 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: 0.8 }}
 				>
-					Admin Dashboard
+					{category.charAt(0).toUpperCase() + category.slice(1)}
 				</motion.h1>
 
-				<div className='flex justify-center mb-8'>
-					{tabs.map((tab) => (
-						<button
-							key={tab.id}
-							onClick={() => setActiveTab(tab.id)}
-							className={`flex items-center px-4 py-2 mx-2 rounded-md transition-colors duration-200 ${
-								activeTab === tab.id
-									? "bg-emerald-600 text-white"
-									: "bg-gray-700 text-gray-300 hover:bg-gray-600"
-							}`}
-						>
-							<tab.icon className='mr-2 h-5 w-5' />
-							{tab.label}
-						</button>
+				<motion.div
+					className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center'
+					initial={{ opacity: 0, y: 20 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.8, delay: 0.2 }}
+				>
+					{products?.length === 0 && (
+						<h2 className='text-3xl font-semibold text-gray-300 text-center col-span-full'>
+							No products found
+						</h2>
+					)}
+
+					{products?.map((product) => (
+						<ProductCard key={product._id} product={product} />
 					))}
-				</div>
-				{activeTab === "create" && <CreateProductForm />}
-				{activeTab === "products" && <ProductsList />}
-				{activeTab === "analytics" && <AnalyticsTab />}
+				</motion.div>
 			</div>
 		</div>
 	);
 };
-export default AdminPage;
+export default CategoryPage;
